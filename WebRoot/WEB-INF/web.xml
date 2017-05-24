@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- web.xml 的加载顺序是：context- param -> listener -> filter -> servlet  -->
+<web-app  
+	xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_3_1.xsd"
+	version="3.1">
+	
+  	   <display-name>MyWeb</display-name>
+	  
+		<!-- <context-param>用于给ServletContext赋值，
+		任意页面都可以通过ServletContext调用getInitParameter方法得到值 -->
+		<context-param>
+			<param-name>location</param-name>
+			<param-value>localhost</param-value>
+		</context-param>
+		<context-param>
+			<param-name>port</param-name>
+			<param-value>8080</param-value>
+		</context-param>
+		
+		
+		<!-- 配置Spring 的IOC容器,用到SpringMVC就必须要写这个！！ 即使applicationContext不存在也可以-->
+		<!-- spring的 配置文件在启动时，加载的是web-info目录下的applicationContext.xml, 
+		运行时使用的是web-info/classes目录下的applicationContext.xml。 
+		这里设置启动时也去找 web-info/classes目录下的applicationContext.xml。-->
+		<context-param>
+		   <param-name>contextConfigLocation</param-name>
+	       <param-value>classpath:applicationContext*.xml</param-value>
+	    </context-param>
+		<!-- SpringMVC配置 -->
+		<!-- 	listener-class里ContextLoaderListener类的作用：
+				启动Web容器时，自动装配ApplicationContext的配置信息。
+				因为它实现了ServletContextListener这个接口，
+				在web.xml配置这个监听器，启动容器时，就会默认执行它实现的方法。
+				一般和上面的一起出现-->
+		<listener>
+		    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+		</listener>
+ 
+ 	   <!-- SpringMVC配置，DispatcherServlet，核心控制器 -->
+	   <servlet>
+	    <servlet-name>MyWeb</servlet-name>
+	    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+	    <load-on-startup>1</load-on-startup>
+	    <!-- DispatcherServlet默认会使用在WEB-INF目录下的"MyWeb-servlet.xml"的配置文件 ，
+	    如果配置文件有多个，可以用contextConfigLocation指定多个文件-->
+	    <init-param>
+	     	<param-name>contextConfigLocation</param-name>
+		    <param-value>/WEB-INF/spring-mvc.xml</param-value>
+	    </init-param>
+	  </servlet>
+	  <servlet-mapping>
+	    <servlet-name>MyWeb</servlet-name>
+	    <url-pattern>/</url-pattern>
+	  </servlet-mapping>
+	  <!-- 配置编码方式过滤器,要配置在所有过滤器最前面 -->
+	  <filter>
+			<filter-name>characterEncodingFilter</filter-name>
+			<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+			<init-param>
+				<param-name>encoding</param-name><!-- 这里名字必须是encoding -->
+				<param-value>UTF-8</param-value>
+			</init-param>
+		</filter>
+		<filter-mapping>
+		<filter-name>characterEncodingFilter</filter-name>
+		<url-pattern>/*</url-pattern> 
+	</filter-mapping>
+	  
+	  
+	  
+	  
+	  
+		<!--  自定义的filter类 -->
+		<filter>
+			<filter-name>TestFilter</filter-name>
+			<filter-class>com.webfilter.TestFilter</filter-class>
+			<init-param>
+				<param-name>logFileName</param-name>
+				<param-value>logTest.txt</param-value>
+			</init-param>
+		</filter>
+		<filter-mapping>
+		<filter-name>TestFilter</filter-name>
+		<url-pattern>/</url-pattern><!-- <url-pattern>元素代表该过滤器作用于所有与url-pattern里的url相匹配的任意资源 -->
+		<!-- 这里也可以把url-pattern元素改成这个 
+		<servlet-name>xxxServlet</servlet-name> 
+		那么这个过滤器将作用于该servlet-->
+	</filter-mapping>
+	
+	<!-- struts2配置，配置struts2的filter必须是最后一个filter ,这个框架不能和SpringMVC框架一起用-->
+       <!-- <filter>  
+           <filter-name>struts2</filter-name>  
+           <filter-class>org.apache.struts2.dispatcher.filter.StrutsPrepareAndExecuteFilter</filter-class>  
+       </filter>  
+       <filter-mapping>  
+           <filter-name>struts2</filter-name>  
+           <url-pattern>/*</url-pattern>  
+       </filter-mapping>   -->
+       
+	 <!--  自定义的servlet类 -->
+	 <!-- form表单提交后，接受的Servlet类 -->
+  	 <servlet>
+       <servlet-name>FirstServlet</servlet-name>
+       <servlet-class>com.servlet.FirstServlet</servlet-class>
+       <description>This is the description of my J2EE component</description>
+       <display-name>This is the display name of my J2EE component</display-name>
+     </servlet>
+     <servlet-mapping>
+       <servlet-name>FirstServlet</servlet-name>
+       <url-pattern>/login</url-pattern>
+     </servlet-mapping>
+     
+     <!-- 设置HttpSession失效时间 -->
+     <session-config>
+     	<session-timeout>2</session-timeout>
+     </session-config>
+     
+     <!-- 设置浏览器中输入非法url时，显示的页面。当第一个welcome-file里的页面找不到时，会自动往下找 -->
+	 <welcome-file-list>
+	 	<welcome-file>jsp/login.jsp</welcome-file>
+	 	<welcome-file>index.jsp</welcome-file>
+	 </welcome-file-list>
+	 
+	 <error-page>
+		<error-code>404</error-code>
+		<location>/error.jsp</location>
+	</error-page>
+	<!-- <error-page>
+		<exception-type>javax.servlet.ServletException</exception-type>
+		<location>/error.jsp</location>
+	</error-page> -->
+		
+	 <!-- 强制整个应用的jsp页面不允许写脚本和java -->
+	<!--  <jsp-config>
+	 	<jsp-property-group>
+	 		<url-pattern>*.jsp</url-pattern>
+	 		<scripting-invalid>true</scripting-invalid>
+	 	</jsp-property-group>
+	 </jsp-config> -->
+	 
+</web-app>

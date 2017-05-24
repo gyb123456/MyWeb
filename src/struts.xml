@@ -1,0 +1,58 @@
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+
+ 	<!-- 启动动态方法的调用，使用这个设置后可以这样调用：action!method.action 。
+ 	！！！！在这里配置是无效的！！！！
+ 	因为truts2-core中有一个叫default.properties的默认配置文件（不能被更改），
+ 	该文件里默认设置了struts.enable.DynamicMethodInvocation=true。
+ 	如果要改这个配置文件里的属性，
+ 	需在src根目录下建一个 struts.properties的配置文件，然后重写所要更改的配置信息，
+ 	在struts.xml 中更改默认配置文件里的属性是无效的。
+ 	-->
+	<constant name="struts.enable.DynamicMethodInvocation" value="true"/>
+	
+ 	<package name="test" namespace="/test" extends="struts-default">  
+        <action name="login" class="com.struts2.action.Login" method="execute">  
+            <result name="success">/success.jsp</result>
+            <result name="error">/error.jsp</result>
+        </action>  
+     </package>  
+     
+     
+    <package name="my" extends="struts-default" namespace="/manage">
+    	<!--  拦截器，每个包下定义的拦截器可以被这个包下面的所有action使用 -->
+        <interceptors>
+        	<interceptor name="InterceptorA" class="com.interceptor.InterceptorA"/>
+        	<interceptor name="InterceptorB" class="com.interceptor.InterceptorB"/>
+        </interceptors>
+        
+    	<!-- 定义处理请求URL为login.action的Action -->
+    	<action name="userOpt" class="com.struts2.action.LoginAction">
+       		<!--  定义处理结果字符串和资源之间的映射关系 -->
+            <result name="success">/success.jsp</result>
+            <result name="error">/error.jsp</result>
+        </action>
+
+        <!--  也可以把上面的action改成像下面这么写，把LoginAction中的login和regist方法都配置成逻辑Action。
+        		要调用login方法，则相应的把jsp中表单元素的action设置为"manage/userLogin.action"； -->
+         <action name="userLogin" class="com.struts2.action.LoginAction" method="login">
+         	<!-- 设置该action对应的拦截器,顺序很重要 -->
+         	<!-- <interceptor-ref name="InterceptorA"/>
+         	<interceptor-ref name="InterceptorB"/> -->
+         	<interceptor-ref name="timer"/>
+         	
+            <result name="success">/success.jsp</result>
+            <result name="error">/error.jsp</result>
+        </action>
+        <action name="userRegist" class="com.struts2.action.LoginAction" method="regist">
+            <result name="success">/success.jsp</result>
+            <result name="error">/error.jsp</result>
+        </action>
+        
+        
+    </package>
+    
+    
+</struts>

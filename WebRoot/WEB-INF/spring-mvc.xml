@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-4.2.xsd
+	http://www.springframework.org/schema/mvc
+	http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd">
+
+	<!-- <context:annotation-config />   -->
+	<!-- 使controller层的注解起作用，当有请求时，自动把请求路径映射到controller层的方法中 -->
+	<context:component-scan base-package="com.springmvc.controller" />
+	
+	<!-- 配置视图解析器 -->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+		p:prefix="/jsp/" p:suffix=".jsp" />
+		
+	<!--下面两个必须要同时存在（或同时没有），且顺序不能颠倒 -->
+	<mvc:annotation-driven/><!-- 解决了@Controller注解的使用前提配置 -->
+ 	<mvc:default-servlet-handler /><!-- 配置静态资源 -->
+ 	
+ 	<!-- 拦截器 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**"/><!-- 设置拦截的url -->
+			<mvc:exclude-mapping path="/FirstController/login/**"/> <!-- 设置不拦截登录的url; path="/**/FirstController/login/**"-->
+			<bean class="com.springmvc.interceptor.LoginIntegrceptor"></bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<!-- 返回json 方法一 需要导入 fastjson.jar包 
+	将controller层返回的非字符串转为json格式，如不作转换，返回Map等非String类型的数据会报错
+	-->  
+	<mvc:annotation-driven>
+        <mvc:message-converters register-defaults="false">
+            <!-- 避免IE执行AJAX时,返回JSON出现下载文件 -->
+            <bean id="fastJsonHttpMessageConverter" class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <!-- 这里顺序不能反，一定先写text/html,不然ie下出现下载提示 -->
+                        <value>text/html;charset=UTF-8</value>
+                        <value>application/json;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+    
+</beans>
