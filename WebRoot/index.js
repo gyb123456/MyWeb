@@ -1,5 +1,4 @@
-/**
- * 
+/**ssss
  */
 $(function(){
 	initClipboard();
